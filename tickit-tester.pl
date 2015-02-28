@@ -13,7 +13,10 @@ $loop->add(
 	my $tickit = Tickit::Async->new
 );
 my $frame = Tickit::Widget::Frame->new(
-	child => my $term = Tickit::Widget::Term->new(loop => $loop),
+	child => my $term = Tickit::Widget::Term->new(
+		command => ['/bin/bash'],
+		loop => $loop
+	),
 	title => 'shell',
 	style => {
 		linetype => 'single'

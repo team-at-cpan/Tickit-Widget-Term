@@ -82,6 +82,7 @@ use Log::Any qw($log);
 This creates a new instance. I'd recommend against using it.
 
  Tickit::Widget::Term->new(
+  command => ['/bin/bash'],
   loop => $loop
  )
 
@@ -90,7 +91,8 @@ This creates a new instance. I'd recommend against using it.
 sub new {
 	my ($class, %args) = @_;
 	my $self = $class->SUPER::new(%args);
-	$self->{loop} = delete $args{loop};
+	$self->{loop} = delete $args{loop} or die 'need a loop';
+	$self->{command} = delete $args{command} or die 'need a command';
 	$self->init;
 	$self
 }
@@ -167,6 +169,14 @@ sub render_to_rb {
 	}
 }
 
+=head2 command
+
+Returns the command to execute plus any args, as an arrayref.
+
+=cut
+
+sub command { $_[0]->{command} }
+
 =head2 init
 
 Calling this yourself is probably not needed, so documenting it would be even less useful.
@@ -176,6 +186,7 @@ Calling this yourself is probably not needed, so documenting it would be even le
 sub init {
 	my ($self) = @_;
 	my $loop = $self->loop;
+	my $cmd = $self->command;
 	$loop->later(sub {
 		$log->debug("Starting deferred PTY creation");
 		$IO::Tty::DEBUG = 1 if DEBUG;
@@ -243,6 +254,7 @@ sub init {
 			}
 			$slave->set_raw;
 
+			$log->debugf("Redirecting handles and Executing command %s", $cmd);
 			# Redirect our STDIO/ERR towards the PTY
 			open STDIN, '<&' . $slave->fileno or die "STDIN - $!";
 			open STDOUT, '>&' . $slave->fileno or die "STDOUT - $!";
@@ -253,7 +265,8 @@ sub init {
 			$slave->close or die "cannot close original PTY? $!";
 
 			# exec { '/bin/ls' } '/bin/ls' or $writer->print($! + 0);
-			exec { '/bin/bash' } '/bin/bash' or $writer->print($! + 0);
+#			exec { '/bin/bash' } '/bin/bash' or $writer->print($! + 0);
+			exec { $cmd->[0] } @$cmd or $writer->print($! + 0);
 			die "cannot exec - $!";
 		}
 	});
