@@ -7,6 +7,7 @@ use parent qw(Tickit::Widget);
 
 use Tickit::Style;
 use constant WIDGET_PEN_FROM_STYLE => 1;
+use constant CAN_FOCUS => 1;
 
 use POSIX;
 use IO::Async::Stream;
@@ -427,8 +428,7 @@ sub push_text {
 	my ($self, $txt) = @_;
 	for($txt) {
 		if(/\G\n/gc) {
-			++$self->{terminal_line};
-			$self->{terminal_col} = 0;
+			$self->terminal_next_line
 		} elsif(/\G([[:print:]]+)/gc) {
 			my $chunk = $1;
 			push @{$self->{writable}}, {
@@ -442,6 +442,47 @@ sub push_text {
 			$log->warnf("Unknown thing in text: %s", substr $_, pos()//0);
 		}
 	}
+	$self->update_cursor;
+}
+
+sub available_lines {
+	my ($self) = @_;
+	return $self->lines unless my $win = $self->window;
+	$win->lines
+}
+sub available_cols {
+	my ($self) = @_;
+	return $self->cols unless my $win = $self->window;
+	$win->cols
+}
+
+sub terminal_next_line {
+	my ($self) = @_;
+	$self->{terminal_col} = 0;
+	if(++$self->{terminal_line} >= $self->available_lines) {
+		$log->infof("Scrolling required, line = %d", $self->terminal_line);
+		$self->scroll(-1, 0);
+	}
+	$self->update_cursor
+}
+
+sub scroll {
+	my ($self, $down, $right) = @_;
+	$self->window->scroll($down, $right);
+	for my $item (@{$self->{writable}}) {
+		$item->{rect}->translate($down, $right) if $item->{rect};
+		$item->{line} += $down if exists $item->{line};
+		$item->{col} += $right if exists $item->{col};
+	}
+	$self->{terminal_line} += $down;
+	$self->{terminal_col} += $right;
+	$self->redraw;
+}
+
+sub update_cursor {
+	my ($self) = @_;
+	return unless my $win = $self->window;
+	$win->cursor_at($self->terminal_line, $self->terminal_col);
 }
 
 }
