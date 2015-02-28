@@ -510,6 +510,11 @@ sub handle_terminal_output {
 			} elsif($mode == ESC) {
 				if(/\Gc/gc) {
 					$log->debug("ESC: Reset");
+					delete $self->{pen};
+					@{$self->{writable}} = ();
+					$self->{terminal_line} = 0;
+					$self->{terminal_col} = 0;
+					$self->update_cursor;
 					$mode = NORMAL;
 				} elsif(/\GD/gc) {
 					$log->debug("ESC: Linefeed");
