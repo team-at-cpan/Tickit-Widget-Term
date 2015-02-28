@@ -68,6 +68,7 @@ use Variable::Disposition qw(retain_future);
 use IO::Tty;
 use IO::Pty;
 use Tickit::Utils qw(textwidth);
+use List::UtilsBy qw(extract_by);
 
 use Log::Any qw($log);
 
@@ -711,12 +712,20 @@ Does some sort of scrolling.
 
 sub scroll {
 	my ($self, $down, $right) = @_;
-	$self->window->scroll($down, $right);
+	my $win = $self->window or die 'no window, no scroll';
+	$win->scroll($down, $right);
+	# Move things around a bit
 	for my $item (@{$self->{writable}}) {
 		$item->{rect}->translate($down, $right) if $item->{rect};
 		$item->{line} += $down if exists $item->{line};
 		$item->{col} += $right if exists $item->{col};
 	}
+	# then throw away the bits that no longer fit
+	extract_by {
+		return 1 if exists $_->{rect} && !$_->{rect}->intersect($win->selfrect);
+		return 1 if exists $_->{line} && $_->{line} < 0;
+		0
+	} @{$self->{writable}};
 	$self->{terminal_line} += $down;
 	$self->{terminal_col} += $right;
 	$self->redraw;
