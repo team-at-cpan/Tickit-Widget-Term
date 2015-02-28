@@ -37,10 +37,13 @@ sub render_to_rb {
 	my ($self, $rb, $rect) = @_;
 	my $win = $self->window;
 	$rb->clip($rect);
+	$rb->clear;
 
 	for my $item (@{$self->{writable}}) {
 		if(my $type = $item->{type}) {
 			if($type eq 'erase') {
+				$rb->eraserect($item->{rect}, $item->{pen});
+			} elsif($type eq 'scroll') {
 				$rb->eraserect($item->{rect}, $item->{pen});
 			} else {
 				$log->errorf("Unknown writequeue type %s", $type);
