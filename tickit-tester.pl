@@ -25,6 +25,12 @@ sub new {
 	$self
 }
 
+sub window_gained {
+	my ($self, $win) = @_;
+	$win->cursor_at(0,0);
+	$self->SUPER::window_gained($win)
+}
+
 sub loop { shift->{loop} }
 
 sub pty { shift->{pty} }
