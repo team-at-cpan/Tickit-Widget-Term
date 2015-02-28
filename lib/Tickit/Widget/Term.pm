@@ -59,6 +59,7 @@ add even more!
 
 use constant WIDGET_PEN_FROM_STYLE => 1;
 use constant CAN_FOCUS => 1;
+use constant DEBUG => 0;
 
 use Tickit::Style;
 
@@ -168,7 +169,7 @@ sub render_to_rb {
 
 =head2 init
 
-Calling this is probably not needed, so documenting it would be even less useful.
+Calling this yourself is probably not needed, so documenting it would be even less useful.
 
 =cut
 
@@ -177,7 +178,7 @@ sub init {
 	my $loop = $self->loop;
 	$loop->later(sub {
 		$log->debug("Starting deferred PTY creation");
-		$IO::Tty::DEBUG = 1;
+		$IO::Tty::DEBUG = 1 if DEBUG;
 		my $pty = IO::Pty->new;
 		$self->{pty} = $pty;
 		$log->debugf("New PTY at %s", $pty->ttyname);
