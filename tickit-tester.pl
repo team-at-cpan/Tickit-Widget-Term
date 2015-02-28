@@ -169,6 +169,7 @@ sub pen { $_[0]->{pen} //= $_[0]->get_style_pen->as_mutable }
 my %csi_map = (
 	m => sub {
 		my ($self, @param) = @_;
+		push @param, 0 unless @param;
 		for(@param) {
 			if($_ == 0) {
 				$log->debug("SGR reset");
@@ -233,14 +234,14 @@ my %csi_map = (
 		my ($self, $line, $col) = @_;
 		$line //= 0;
 		$col //= 0;
-		$log->debug("SGR CUP %d, %d", $line, $col);
+		$log->debugf("SGR CUP %d, %d", $line, $col);
 		$self->{terminal_line} = $line - 1;
 		$self->{terminal_col} = $col - 1;
 	},
 	J => sub {
 		my ($self, $type) = @_;
 		$type //= 0;
-		$log->debug("SGR ED %d", $type);
+		$log->debugf("SGR ED %d", $type);
 		@{$self->{writable}} = ();
 		$self->{terminal_line} = 0;
 		$self->{terminal_col} = 0;
@@ -368,6 +369,9 @@ sub handle_terminal_output {
 				} elsif(/\G8/gc) {
 					$log->debug("ESC: DECSC");
 					$self->pop_state;
+					$mode = NORMAL;
+				} elsif(/\G\(([B0UK])/gc) {
+					$log->debugf("ESC: G0 charset %s", $1);
 					$mode = NORMAL;
 				} else {
 					$log->debugf("Some other ESC thing: %s", substr $_, pos() // 0, 1);
