@@ -387,6 +387,8 @@ sub handle_terminal_output {
 					$mode = NORMAL;
 				} elsif(/\GH/gc) {
 					$log->debug("ESC: Set tab stop");
+					@{$self->{tab_stops}} = sort { $a <=> $b } @{$self->{tab_stops} ||= []}, $self->terminal_col;
+					$log->debugf("Tab stops now: %s", join ',', @{$self->{tab_stops}});
 					$mode = NORMAL;
 				} elsif(/\GM/gc) {
 					$log->debug("ESC: Reverse line feed");
@@ -434,6 +436,14 @@ sub handle_terminal_output {
 #	push @{$self->{writable}}, split /\n/, $data;
 	$self->redraw;
 	length $$buf;
+}
+
+sub find_next_tab {
+	my ($self) = @_;
+	for(@{$self->{tab_stops} ||= []}) {
+		return $_ if $_ > $self->terminal_col;
+	}
+	return $self->terminal_cols - 1;
 }
 
 sub push_state {
