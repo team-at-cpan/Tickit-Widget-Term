@@ -13,6 +13,8 @@ Tickit::Widget::Term - runs a process in a window, using terminal emulation that
 
 =head1 SYNOPSIS
 
+# EXAMPLE: examples/synopsis.pl
+
 =head1 DESCRIPTION
 
 In principle, a terminal widget would provide an abstraction for running any terminal application under
