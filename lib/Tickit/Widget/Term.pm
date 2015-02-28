@@ -502,7 +502,6 @@ sub handle_terminal_output {
 					$log->debugf("Tab - will move to %d", $col);
 					$self->{terminal_col} = $col;
 					$self->update_cursor;
-					$mode = ESC;
 				} else {
 					$log->debugf("No characters of interest found, must be text: %s", substr $_, pos() // 0, -1);
 					last BREAKOUT
