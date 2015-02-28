@@ -359,11 +359,17 @@ sub handle_terminal_output {
 			}
 
 			if($mode == NORMAL) {
-				if(/\G([\x20-\x7F]+)/gc) {
+				if(/\G([^\x00-\x1F]+)/gc) {
 					$log->debugf("Text sequence: %s", $1);
 					$self->push_text($1);
 				} elsif(/\G\x1B/gc) {
 					$log->debugf("Escape sequence: %s", sprintf '%v02x', substr $_, pos, 8);
+					$mode = ESC;
+				} elsif(/\G\x09/gc) {
+					my $col = $self->find_next_tab;
+					$log->debugf("Tab - will move to %d", $col);
+					$self->{terminal_col} = $col;
+					$self->update_cursor;
 					$mode = ESC;
 				} else {
 					$log->debugf("No characters of interest found, must be text: %s", substr $_, pos() // 0, -1);
