@@ -279,6 +279,26 @@ my %csi_map = (
 			)
 		};
 		$self->redraw;
+	},
+	d => sub {
+		my ($self, $line) = @_;
+		$line //= 0;
+		$log->debugf("SGR VPA %d", $line);
+		$self->{terminal_line} = $line - 1;
+		$self->update_cursor;
+	},
+	g => sub {
+		my ($self, $type) = @_;
+		$log->debugf("CSI TBC %d", $type);
+		if($type) {
+			if($type == 3) {
+				@{$self->{tab_stops}} = ();
+			} else {
+				$log->warnf("Tab clear requested with unknown parameter (expected 3) - %s", $type);
+			}
+		} else {
+			extract_by { $_ == $self->terminal_col } @{$self->{tab_stops}}
+		}
 	}
 );
 
