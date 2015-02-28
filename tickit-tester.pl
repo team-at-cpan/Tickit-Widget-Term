@@ -244,6 +244,7 @@ my %csi_map = (
 		$log->debugf("SGR CUP %d, %d", $line, $col);
 		$self->{terminal_line} = $line - 1;
 		$self->{terminal_col} = $col - 1;
+		$self->update_cursor;
 	},
 	J => sub {
 		my ($self, $type) = @_;
@@ -252,6 +253,7 @@ my %csi_map = (
 		@{$self->{writable}} = ();
 		$self->{terminal_line} = 0;
 		$self->{terminal_col} = 0;
+		$self->update_cursor;
 		$self->redraw;
 	},
 	K => sub {
@@ -424,6 +426,7 @@ sub pop_state {
 	$self->{pen} = $state->{pen};
 	$self->{terminal_line} = $state->{line};
 	$self->{terminal_col} = $state->{col};
+	$self->update_cursor;
 	$self
 }
 
