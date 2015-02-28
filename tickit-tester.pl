@@ -159,14 +159,14 @@ sub on_key {
 	if($ev->type eq 'key') {
 		if($ev->str eq 'Enter') {
 			$self->pty->write("\n");
-			$self->push_text("\n");
+#			$self->push_text("\n");
 		} elsif($ev->str eq 'Backspace') {
 			$self->pty->write("\x08");
 #			$self->push_text("\n");
 		}
 	} elsif($ev->type eq 'text') {
 		$self->pty->write($ev->str);
-		$self->push_text($ev->str);
+#		$self->push_text($ev->str);
 	}
 	$self->redraw;
 }
