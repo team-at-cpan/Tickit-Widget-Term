@@ -2,6 +2,8 @@ requires 'parent', 0;
 requires 'curry', 0;
 requires 'Future', '>= 0.15';
 requires 'Try::Tiny', 0;
+requires 'Tickit::Style', 0;
+requires 'Tickit::Widget', 0;
 requires 'Mixin::Event::Dispatch', '>= 1.000';
 
 on 'test' => sub {
